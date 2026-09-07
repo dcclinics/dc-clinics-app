@@ -45,7 +45,7 @@ db.exec(`
   -- los pacientes directamente.
   CREATE TABLE IF NOT EXISTS testimonials (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    patient_name TEXT NOT NULL DEFAULT 'Paciente de DcClinics',
+    patient_name TEXT NOT NULL DEFAULT 'Paciente de DC Clinics',
     procedure TEXT NOT NULL DEFAULT '',
     comment TEXT NOT NULL DEFAULT '',
     photo_path TEXT NOT NULL,
