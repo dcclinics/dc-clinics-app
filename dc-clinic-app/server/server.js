@@ -103,7 +103,7 @@ const server = http.createServer(async (req, res) => {
           db.prepare("UPDATE appointments SET status = 'confirmada' WHERE id = ?").run(appt.id);
           await notifyWhatsApp(
             appt.patient_phone,
-            `¡Hola ${appt.patient_name}! Tu cita de ${appt.procedure} quedó confirmada para el ${appt.date} a las ${appt.time}. Te esperamos en DC Clinic.`
+            `¡Hola ${appt.patient_name}! Tu cita de ${appt.procedure} quedó confirmada para el ${appt.date} a las ${appt.time}. Te esperamos en DC Clinics.`
           );
         }
       }
@@ -172,7 +172,7 @@ const server = http.createServer(async (req, res) => {
       db.prepare("UPDATE appointments SET status = 'confirmada' WHERE id = ?").run(appointmentId);
       await notifyWhatsApp(
         patient_phone,
-        `¡Hola ${patient_name}! Tu cita de ${procedure} quedó agendada para el ${date} a las ${time}. Te esperamos en DC Clinic.`
+        `¡Hola ${patient_name}! Tu cita de ${procedure} quedó agendada para el ${date} a las ${time}. Te esperamos en DC Clinics.`
       );
       return sendJson(res, 200, { appointment_id: appointmentId, checkout_url: null });
     }
