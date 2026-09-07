@@ -180,7 +180,7 @@
       }
       wrap.innerHTML = list.map(function (t) {
         return '<div class="result-card">' +
-          '<img class="result-photo" src="' + t.photo_path + '" alt="Resultado de ' + escapeHtml(t.patient_name) + '" loading="lazy">' +
+          '<img class="result-photo" src="' + t.photo_path + '" alt="Resultado de ' + escapeHtml(t.patient_name) + '" loading="lazy" onclick="openLightbox(\'' + t.photo_path + '\')">' +
           '<div class="result-body">' +
           (t.procedure ? '<span class="result-tag">' + escapeHtml(t.procedure) + '</span>' : '') +
           '<p class="result-name">' + escapeHtml(t.patient_name) + '</p>' +
@@ -191,6 +191,23 @@
       wrap.innerHTML = '<p class="result-empty">No se pudieron cargar los resultados.</p>';
     }
   }
+
+  window.openLightbox = function (src) {
+    var img = document.getElementById('lightbox-img');
+    var box = document.getElementById('lightbox');
+    if (!img || !box) return;
+    img.src = src;
+    box.classList.add('open');
+  };
+
+  window.closeLightbox = function () {
+    var box = document.getElementById('lightbox');
+    if (box) box.classList.remove('open');
+  };
+
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') window.closeLightbox();
+  });
 
   boot();
 })();
