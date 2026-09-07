@@ -1,6 +1,6 @@
-# DcClinics by Dr Camilo Henao
+# DC Clinics by Dr. Camilo Henao
 
-App para pacientes de DcClinics by Dr Camilo Henao: agendamiento de citas y biblioteca de videos
+App para pacientes de DC Clinics by Dr. Camilo Henao: agendamiento de citas y biblioteca de videos
 educativos sobre cuidados pre y post-operatorios. Incluye dos partes:
 
 - **`server/` + `public/`** — la app real y funcional, hoy mismo: un backend
@@ -26,7 +26,7 @@ los videos (de ejemplo). Requiere **Node 22.5 o más nuevo** (usa el módulo
 Copia `server/.env.example` a `server/.env` y llena lo que ya tienes:
 
 **Stripe** (para cobrar la valoración inicial al agendar):
-1. En tu cuenta de Stripe, crea un producto "Valoración inicial DcClinics" con
+1. En tu cuenta de Stripe, crea un producto "Valoración inicial DC Clinics" con
    su precio.
 2. Copia el *Price ID* a `STRIPE_PRICE_ID` y tu clave secreta a
    `STRIPE_SECRET_KEY`.
@@ -71,7 +71,7 @@ paciente. Tú las subes desde un panel aparte, pensado solo para ti:
    cámbiala antes de que la app esté pública, cualquiera que la adivine podría
    subir o borrar fotos).
 3. Sube la foto, el nombre de cómo quieras mostrar al paciente (puede ser
-   "Paciente de DcClinics" si prefieres no usar su nombre real), el
+   "Paciente de DC Clinics" si prefieres no usar su nombre real), el
    procedimiento y su comentario — **solo con el consentimiento del
    paciente para publicar su foto**. Las fotos quedan guardadas en
    `public/uploads/testimonials/`.
