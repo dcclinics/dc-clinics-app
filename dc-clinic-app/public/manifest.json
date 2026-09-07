@@ -1,6 +1,6 @@
 {
-  "name": "DC Clinic",
-  "short_name": "DC Clinic",
+  "name": "DC Clinics",
+  "short_name": "DC Clinics",
   "description": "Agenda tu cita y consulta videos de cuidados pre y post-operatorios de DC Clinic.",
   "start_url": "/",
   "display": "standalone",
