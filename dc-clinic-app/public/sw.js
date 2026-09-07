@@ -1,7 +1,7 @@
 // Service worker mínimo: cachea el "shell" de la app para que abra rápido
 // y no se rompa si el celular pierde señal un momento. Las llamadas a /api/
 // siempre van a la red (los datos deben ser reales, no cacheados).
-const CACHE = 'dc-clinic-shell-v2';
+const CACHE = 'dc-clinic-shell-v3';
 const SHELL = ['/', '/styles.css', '/app.js', '/manifest.json'];
 
 self.addEventListener('install', (e) => {
