@@ -119,3 +119,20 @@ input.field{ width:100%; padding:11px 13px; border:1px solid var(--line); border
 .result-name{ font-size:13px; font-weight:700; margin:0 0 4px; }
 .result-comment{ font-size:12.8px; color:var(--ink-soft); line-height:1.5; margin:0; }
 .result-empty{ font-size:12.5px; color:var(--ink-faint); text-align:center; padding:40px 10px; }
+
+
+.result-photo{ cursor: zoom-in; }
+.lightbox{
+  position: fixed; inset: 0; background: rgba(10,14,12,.92);
+  display: none; align-items: center; justify-content: center;
+  z-index: 999; padding: 28px; cursor: zoom-out;
+}
+.lightbox.open{ display: flex; }
+.lightbox img{
+  max-width: 100%; max-height: 100%; border-radius: 12px;
+  box-shadow: 0 20px 60px rgba(0,0,0,.5); object-fit: contain;
+}
+.lightbox-close{
+  position: absolute; top: 16px; right: 20px; background: none; border: none;
+  color: #F4FBF8; font-size: 34px; line-height: 1; cursor: pointer; padding: 6px 10px;
+}
