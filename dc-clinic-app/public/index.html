@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>DC Clinic</title>
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#2F6B5E">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="DC Clinic">
+  <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+  <link rel="icon" href="/favicon.png">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+
+  <div class="app-shell">
+    <div class="screens">
+
+      <div class="screen active" data-screen="inicio">
+        <div class="app-h"><div class="wordmark">DC<span>Clinic</span></div></div>
+        <p class="greet">Bienvenida de vuelta</p>
+        <p class="greet-name">Hola 👋</p>
+
+        <div class="card" style="background:linear-gradient(135deg,#2F6B5E,#1C4239); color:#F4FBF8; margin-bottom:20px;">
+          <div style="font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; opacity:.8;">Agenda tu cita</div>
+          <h3 style="font-family:'Cormorant Garamond',serif; font-size:19px; margin:5px 0 2px; font-weight:600;">Empieza por elegir tu procedimiento</h3>
+          <p style="font-size:12.5px; opacity:.85; margin:6px 0 0;">Confirmación y recordatorios por WhatsApp.</p>
+        </div>
+
+        <div class="quick-row">
+          <button class="quick-btn" onclick="goTab('agendar')">
+            <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M8 3v4M16 3v4M3 10h18"/></svg>
+            <span>Agendar una cita</span>
+          </button>
+          <button class="quick-btn" onclick="goTab('videos')">
+            <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M10 8.5l6 3.5-6 3.5v-7z" fill="currentColor" stroke="none"/></svg>
+            <span>Ver videos educativos</span>
+          </button>
+        </div>
+
+        <p class="sec-title">Videos recomendados</p>
+        <div class="vgrid" id="home-videos"></div>
+      </div>
+
+      <div class="screen" data-screen="agendar">
+        <div class="app-h"><div class="wordmark">Agendar</div></div>
+
+        <div id="step-1">
+          <p class="sec-title">¿Qué procedimiento te interesa?</p>
+          <div class="proc-grid" id="proc-grid"></div>
+        </div>
+
+        <div id="step-2" style="display:none">
+          <button class="step-back" onclick="agendaBack(1)">← Cambiar procedimiento</button>
+          <p class="sec-title" id="proc-selected-title">Elige fecha</p>
+          <div class="day-strip" id="day-strip"></div>
+          <p class="sec-title">Horas disponibles</p>
+          <div class="slot-grid" id="slot-grid">Cargando…</div>
+          <div style="margin-top:16px">
+            <input class="field" id="pname" placeholder="Tu nombre completo">
+            <input class="field" id="pphone" placeholder="Tu WhatsApp (ej. +57 3XX XXX XXXX)">
+          </div>
+          <button class="cta" id="confirm-btn" disabled onclick="agendaConfirm()">Confirmar cita</button>
+          <div class="err" id="agenda-err"></div>
+        </div>
+
+        <div id="step-3" style="display:none">
+          <div class="confirm-wrap">
+            <div class="check-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 13l4 4L19 7"/></svg></div>
+            <h2>¡Cita agendada!</h2>
+            <p id="confirm-msg">Recibirás la confirmación por WhatsApp.</p>
+            <button class="cta" onclick="goTab('inicio')">Volver al inicio</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="screen" data-screen="videos">
+        <div class="app-h"><div class="wordmark">Videos</div></div>
+        <div class="pill-row" id="video-pills"></div>
+        <div class="vgrid" id="video-grid"></div>
+      </div>
+
+    </div>
+
+    <div class="tabbar">
+      <button class="tab active" data-tab="inicio" onclick="goTab('inicio')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 11l8-6 8 6v8a1 1 0 01-1 1h-4v-6H9v6H5a1 1 0 01-1-1z"/></svg>
+        <span>Inicio</span>
+      </button>
+      <button class="tab" data-tab="agendar" onclick="goTab('agendar')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M8 3v4M16 3v4M3 10h18"/></svg>
+        <span>Agendar</span>
+      </button>
+      <button class="tab" data-tab="videos" onclick="goTab('videos')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="9"/><path d="M10 8.5l6 3.5-6 3.5v-7z" fill="currentColor" stroke="none"/></svg>
+        <span>Videos</span>
+      </button>
+    </div>
+  </div>
+
+  <script src="/app.js"></script>
+</body>
+</html>

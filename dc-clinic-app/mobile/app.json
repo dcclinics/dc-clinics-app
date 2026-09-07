@@ -1,0 +1,23 @@
+{
+  "expo": {
+    "name": "DC Clinic",
+    "slug": "dc-clinic",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "../public/icons/icon-512.png",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "backgroundColor": "#EDEAE3"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.dcclinic.app"
+    },
+    "android": {
+      "package": "com.dcclinic.app",
+      "adaptiveIcon": {
+        "backgroundColor": "#2F6B5E"
+      }
+    }
+  }
+}

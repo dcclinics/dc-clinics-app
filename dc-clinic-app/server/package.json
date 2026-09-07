@@ -1,0 +1,16 @@
+{
+  "name": "dc-clinic-app-server",
+  "version": "1.0.0",
+  "description": "Backend de la app de pacientes de DC Clinic: agendamiento de citas y biblioteca de videos. Escrito solo con módulos nativos de Node — no requiere \"npm install\" para correr.",
+  "main": "server.js",
+  "type": "commonjs",
+  "engines": {
+    "node": ">=22.5.0"
+  },
+  "scripts": {
+    "seed": "node db.js --seed",
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {}
+}
