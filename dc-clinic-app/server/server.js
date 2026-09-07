@@ -1,4 +1,4 @@
-// server.js — servidor de la app DcClinics by Dr Camilo Henao. Escrito solo con módulos nativos
+// server.js — servidor de la app DC Clinics by Dr. Camilo Henao. Escrito solo con módulos nativos
 // de Node (http, fs, node:sqlite) para que corra en cualquier hosting sin
 // depender de "npm install" (algunos entornos restringen el registro de npm).
 require('./loadEnv')();
@@ -136,7 +136,7 @@ const server = http.createServer(async (req, res) => {
           db.prepare("UPDATE appointments SET status = 'confirmada' WHERE id = ?").run(appt.id);
           await notifyWhatsApp(
             appt.patient_phone,
-            `¡Hola ${appt.patient_name}! Tu cita de ${appt.procedure} quedó confirmada para el ${appt.date} a las ${appt.time}. Te esperamos en DcClinics by Dr Camilo Henao.`
+            `¡Hola ${appt.patient_name}! Tu cita de ${appt.procedure} quedó confirmada para el ${appt.date} a las ${appt.time}. Te esperamos en DC Clinics by Dr. Camilo Henao.`
           );
         }
       }
@@ -205,7 +205,7 @@ const server = http.createServer(async (req, res) => {
       db.prepare("UPDATE appointments SET status = 'confirmada' WHERE id = ?").run(appointmentId);
       await notifyWhatsApp(
         patient_phone,
-        `¡Hola ${patient_name}! Tu cita de ${procedure} quedó agendada para el ${date} a las ${time}. Te esperamos en DcClinics by Dr Camilo Henao.`
+        `¡Hola ${patient_name}! Tu cita de ${procedure} quedó agendada para el ${date} a las ${time}. Te esperamos en DC Clinics by Dr. Camilo Henao.`
       );
       return sendJson(res, 200, { appointment_id: appointmentId, checkout_url: null });
     }
@@ -236,7 +236,7 @@ const server = http.createServer(async (req, res) => {
       const info = db
         .prepare('INSERT INTO testimonials (patient_name, procedure, comment, photo_path) VALUES (?,?,?,?)')
         .run(
-          (patient_name || '').trim() || 'Paciente de DcClinics',
+          (patient_name || '').trim() || 'Paciente de DC Clinics',
           (procedure || '').trim(),
           (comment || '').trim(),
           saved.photoPath
@@ -267,5 +267,5 @@ const server = http.createServer(async (req, res) => {
 });
 
 server.listen(PORT, () => {
-  console.log(`DcClinics by Dr Camilo Henao escuchando en http://localhost:${PORT}`);
+  console.log(`DC Clinics by Dr. Camilo Henao escuchando en http://localhost:${PORT}`);
 });
