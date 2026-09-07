@@ -1,4 +1,4 @@
-// server.js — servidor de la app DC Clinic. Escrito solo con módulos nativos
+// server.js — servidor de la app DcClinics by Dr Camilo Henao. Escrito solo con módulos nativos
 // de Node (http, fs, node:sqlite) para que corra en cualquier hosting sin
 // depender de "npm install" (algunos entornos restringen el registro de npm).
 require('./loadEnv')();
@@ -6,6 +6,7 @@ require('./loadEnv')();
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
 const { db, generateDaySlots, seed } = require('./db');
 const { notifyWhatsApp } = require('./whatsapp');
 const { createCheckoutSession, verifyStripeSignature } = require('./stripe');
@@ -14,12 +15,44 @@ seed();
 
 const PORT = process.env.PORT || 3000;
 const PUBLIC_DIR = path.join(__dirname, '..', 'public');
+
+// --- Testimonios: fotos de resultados + comentarios de pacientes ---
+// Se guardan como archivos dentro de public/uploads/testimonials, así el
+// mismo servidor de archivos estáticos ya los sirve, sin ruta adicional.
+const TESTIMONIALS_DIR = path.join(PUBLIC_DIR, 'uploads', 'testimonials');
+fs.mkdirSync(TESTIMONIALS_DIR, { recursive: true });
+const MAX_PHOTO_BYTES = 8 * 1024 * 1024; // 8MB por foto
+// Protege subir/borrar testimonios (ver /admin.html). Configura tu propia
+// clave en server/.env (ADMIN_KEY) antes de poner esto en producción — si no
+// la configuras, se usa esta clave de demo, visible en este mismo código.
+const ADMIN_KEY = process.env.ADMIN_KEY || 'demo123';
+if (!process.env.ADMIN_KEY) {
+  console.warn('⚠️  ADMIN_KEY no configurada — usando clave de demo "demo123" para /admin.html. Cámbiala en server/.env antes de publicar la app.');
+}
+
+function isAdmin(req) {
+  return (req.headers['x-admin-key'] || '') === ADMIN_KEY;
+}
+
+function saveBase64Photo(dataUrl) {
+  const match = /^data:image\/(png|jpe?g|webp);base64,(.+)$/i.exec(dataUrl || '');
+  if (!match) return { error: 'Formato de imagen no soportado (usa JPG, PNG o WEBP).' };
+  const ext = match[1].toLowerCase().replace('jpeg', 'jpg');
+  const buffer = Buffer.from(match[2], 'base64');
+  if (buffer.length > MAX_PHOTO_BYTES) return { error: 'La foto pesa más de 8MB — usa una más liviana.' };
+  const filename = `${Date.now()}-${crypto.randomUUID()}.${ext}`;
+  fs.writeFileSync(path.join(TESTIMONIALS_DIR, filename), buffer);
+  return { photoPath: `/uploads/testimonials/${filename}` };
+}
 const MIME = {
   '.html': 'text/html; charset=utf-8',
   '.js': 'application/javascript; charset=utf-8',
   '.css': 'text/css; charset=utf-8',
   '.json': 'application/json; charset=utf-8',
   '.png': 'image/png',
+  '.jpg': 'image/jpeg',
+  '.jpeg': 'image/jpeg',
+  '.webp': 'image/webp',
   '.svg': 'image/svg+xml',
   '.ico': 'image/x-icon'
 };
@@ -103,7 +136,7 @@ const server = http.createServer(async (req, res) => {
           db.prepare("UPDATE appointments SET status = 'confirmada' WHERE id = ?").run(appt.id);
           await notifyWhatsApp(
             appt.patient_phone,
-            `¡Hola ${appt.patient_name}! Tu cita de ${appt.procedure} quedó confirmada para el ${appt.date} a las ${appt.time}. Te esperamos en DC Clinics.`
+            `¡Hola ${appt.patient_name}! Tu cita de ${appt.procedure} quedó confirmada para el ${appt.date} a las ${appt.time}. Te esperamos en DcClinics by Dr Camilo Henao.`
           );
         }
       }
@@ -172,7 +205,7 @@ const server = http.createServer(async (req, res) => {
       db.prepare("UPDATE appointments SET status = 'confirmada' WHERE id = ?").run(appointmentId);
       await notifyWhatsApp(
         patient_phone,
-        `¡Hola ${patient_name}! Tu cita de ${procedure} quedó agendada para el ${date} a las ${time}. Te esperamos en DC Clinics.`
+        `¡Hola ${patient_name}! Tu cita de ${procedure} quedó agendada para el ${date} a las ${time}. Te esperamos en DcClinics by Dr Camilo Henao.`
       );
       return sendJson(res, 200, { appointment_id: appointmentId, checkout_url: null });
     }
@@ -182,6 +215,45 @@ const server = http.createServer(async (req, res) => {
       const row = db.prepare('SELECT * FROM appointments WHERE id = ?').get(Number(apptMatch[1]));
       if (!row) return sendJson(res, 404, { error: 'No encontrada' });
       return sendJson(res, 200, row);
+    }
+
+    // ---- Testimonios (fotos de resultados + comentarios de pacientes) ----
+    if (pathname === '/api/testimonials' && req.method === 'GET') {
+      const rows = db
+        .prepare('SELECT id, patient_name, procedure, comment, photo_path, created_at FROM testimonials WHERE published = 1 ORDER BY id DESC')
+        .all();
+      return sendJson(res, 200, rows);
+    }
+
+    if (pathname === '/api/testimonials' && req.method === 'POST') {
+      if (!isAdmin(req)) return sendJson(res, 401, { error: 'Clave de administrador inválida.' });
+      const { patient_name, procedure, comment, photo_base64 } = await readJsonBody(req);
+      if (!photo_base64) return sendJson(res, 400, { error: 'Falta la foto.' });
+
+      const saved = saveBase64Photo(photo_base64);
+      if (saved.error) return sendJson(res, 400, { error: saved.error });
+
+      const info = db
+        .prepare('INSERT INTO testimonials (patient_name, procedure, comment, photo_path) VALUES (?,?,?,?)')
+        .run(
+          (patient_name || '').trim() || 'Paciente de DcClinics',
+          (procedure || '').trim(),
+          (comment || '').trim(),
+          saved.photoPath
+        );
+      const row = db.prepare('SELECT * FROM testimonials WHERE id = ?').get(info.lastInsertRowid);
+      return sendJson(res, 200, row);
+    }
+
+    const testimonialMatch = pathname.match(/^\/api\/testimonials\/(\d+)$/);
+    if (testimonialMatch && req.method === 'DELETE') {
+      if (!isAdmin(req)) return sendJson(res, 401, { error: 'Clave de administrador inválida.' });
+      const id = Number(testimonialMatch[1]);
+      const row = db.prepare('SELECT * FROM testimonials WHERE id = ?').get(id);
+      if (!row) return sendJson(res, 404, { error: 'No encontrado' });
+      db.prepare('DELETE FROM testimonials WHERE id = ?').run(id);
+      fs.unlink(path.join(PUBLIC_DIR, row.photo_path), () => {}); // no pasa nada si ya no está
+      return sendJson(res, 200, { deleted: true });
     }
 
     if (pathname.startsWith('/api/')) return sendJson(res, 404, { error: 'Ruta no encontrada' });
@@ -195,5 +267,5 @@ const server = http.createServer(async (req, res) => {
 });
 
 server.listen(PORT, () => {
-  console.log(`DC Clinic App escuchando en http://localhost:${PORT}`);
+  console.log(`DcClinics by Dr Camilo Henao escuchando en http://localhost:${PORT}`);
 });

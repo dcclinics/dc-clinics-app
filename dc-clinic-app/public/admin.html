@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DcClinics by Dr Camilo Henao — Admin de resultados</title>
+  <link rel="icon" href="/favicon.png">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600&family=Sora:wght@400;500;600;700&display=swap');
+    :root{
+      --page-bg:#EDEAE3; --paper:#F7F5F1; --paper-raised:#FFFFFF;
+      --ink:#1E2422; --ink-soft:#5C6663; --ink-faint:#8B938F; --line:#E1DED7;
+      --accent:#2F6B5E; --accent-ink:#1C4239; --accent-soft:#DCEAE5;
+      --err:#B3423A;
+    }
+    *{ box-sizing:border-box; }
+    body{ margin:0; background:var(--page-bg); color:var(--ink); font-family:'Sora', system-ui, sans-serif;
+      display:flex; justify-content:center; padding:32px 16px 60px; min-height:100vh; }
+    .wrap{ width:520px; max-width:100%; }
+    h1{ font-family:'Cormorant Garamond', Georgia, serif; font-size:26px; margin:0 0 4px; }
+    .sub{ font-size:13px; color:var(--ink-soft); margin:0 0 24px; }
+    .card{ background:var(--paper-raised); border:1px solid var(--line); border-radius:16px; padding:20px 20px 22px; margin-bottom:20px; }
+    label{ display:block; font-size:12px; font-weight:600; color:var(--ink-soft); margin:14px 0 6px; }
+    label:first-of-type{ margin-top:0; }
+    input[type=text], textarea, select{ width:100%; padding:11px 13px; border:1px solid var(--line); border-radius:10px;
+      font-family:inherit; font-size:13.5px; background:var(--paper-raised); color:var(--ink); }
+    textarea{ resize:vertical; min-height:70px; }
+    input[type=file]{ font-size:12.5px; }
+    .preview{ margin-top:10px; max-width:100%; max-height:220px; border-radius:10px; display:none; }
+    .cta{ width:100%; margin-top:18px; background:var(--accent); color:#F4FBF8; border:none; border-radius:12px;
+      padding:13px; font-family:inherit; font-size:14px; font-weight:600; cursor:pointer; }
+    .cta[disabled]{ opacity:.5; cursor:default; }
+    .msg{ font-size:12.5px; margin-top:10px; }
+    .msg.err{ color:var(--err); }
+    .msg.ok{ color:var(--accent-ink); }
+    .list{ display:flex; flex-direction:column; gap:10px; }
+    .item{ display:flex; gap:12px; align-items:center; background:var(--paper-raised); border:1px solid var(--line);
+      border-radius:12px; padding:10px; }
+    .item img{ width:56px; height:56px; object-fit:cover; border-radius:8px; flex:0 0 auto; background:var(--accent-soft); }
+    .item .meta{ flex:1; min-width:0; }
+    .item .name{ font-size:12.8px; font-weight:700; margin:0 0 2px; }
+    .item .comment{ font-size:12px; color:var(--ink-soft); margin:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .item button{ flex:0 0 auto; background:none; border:1px solid var(--err); color:var(--err); border-radius:8px;
+      padding:7px 10px; font-family:inherit; font-size:11.5px; cursor:pointer; }
+    .gate{ display:flex; flex-direction:column; gap:10px; }
+    .empty{ font-size:12.5px; color:var(--ink-faint); }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Resultados — panel de administración</h1>
+    <p class="sub">Sube fotos de resultados y comentarios de pacientes (solo con su consentimiento) para mostrarlos en la sección "Resultados" de la app.</p>
+
+    <div class="card gate" id="gate">
+      <label for="key-input">Clave de administrador</label>
+      <input type="text" id="key-input" placeholder="Clave de /server/.env (ADMIN_KEY)">
+      <button class="cta" id="gate-btn" type="button">Entrar</button>
+      <p class="msg err" id="gate-msg"></p>
+    </div>
+
+    <div id="admin-area" style="display:none">
+      <div class="card">
+        <label for="f-name">Nombre del paciente (o cómo quieras mostrarlo)</label>
+        <input type="text" id="f-name" placeholder="Ej. Paciente de DcClinics, o un nombre de pila">
+
+        <label for="f-proc">Procedimiento (opcional)</label>
+        <select id="f-proc"><option value="">— Sin especificar —</option></select>
+
+        <label for="f-comment">Comentario del paciente (opcional)</label>
+        <textarea id="f-comment" placeholder="Lo que el paciente comentó sobre su experiencia o resultado…"></textarea>
+
+        <label for="f-photo">Foto del resultado</label>
+        <input type="file" id="f-photo" accept="image/png, image/jpeg, image/webp">
+        <img class="preview" id="f-preview" alt="Vista previa">
+
+        <button class="cta" id="submit-btn" disabled>Publicar testimonio</button>
+        <p class="msg" id="form-msg"></p>
+      </div>
+
+      <div class="card">
+        <label style="margin:0 0 10px">Testimonios publicados</label>
+        <div class="list" id="list"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      var KEY_STORAGE = 'dcclinic_admin_key';
+      var photoDataUrl = null;
+
+      function adminKey() { return sessionStorage.getItem(KEY_STORAGE) || ''; }
+
+      function headers(json) {
+        var h = { 'X-Admin-Key': adminKey() };
+        if (json) h['Content-Type'] = 'application/json';
+        return h;
+      }
+
+      function escapeHtml(str) {
+        return String(str || '').replace(/[&<>"']/g, function (c) {
+          return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+        });
+      }
+
+      async function loadProcedures() {
+        try {
+          var res = await fetch('/api/procedures');
+          var list = await res.json();
+          var sel = document.getElementById('f-proc');
+          list.forEach(function (p) {
+            var opt = document.createElement('option');
+            opt.value = p.name; opt.textContent = p.name;
+            sel.appendChild(opt);
+          });
+        } catch (e) {}
+      }
+
+      async function loadList() {
+        var wrap = document.getElementById('list');
+        wrap.innerHTML = '<p class="empty">Cargando…</p>';
+        try {
+          var res = await fetch('/api/testimonials');
+          var list = await res.json();
+          if (!list.length) { wrap.innerHTML = '<p class="empty">Todavía no has publicado ningún testimonio.</p>'; return; }
+          wrap.innerHTML = list.map(function (t) {
+            return '<div class="item">' +
+              '<img src="' + t.photo_path + '" alt="">' +
+              '<div class="meta"><p class="name">' + escapeHtml(t.patient_name) + (t.procedure ? ' · ' + escapeHtml(t.procedure) : '') + '</p>' +
+              '<p class="comment">' + escapeHtml(t.comment || 'Sin comentario') + '</p></div>' +
+              '<button onclick="window.__delTestimonial(' + t.id + ')">Borrar</button>' +
+              '</div>';
+          }).join('');
+        } catch (e) {
+          wrap.innerHTML = '<p class="empty">No se pudo cargar la lista.</p>';
+        }
+      }
+
+      window.__delTestimonial = async function (id) {
+        if (!confirm('¿Borrar este testimonio? Esta acción no se puede deshacer.')) return;
+        try {
+          var res = await fetch('/api/testimonials/' + id, { method: 'DELETE', headers: headers(false) });
+          if (!res.ok) { alert('No se pudo borrar (¿clave incorrecta?).'); return; }
+          loadList();
+        } catch (e) { alert('No se pudo conectar con el servidor.'); }
+      };
+
+      function unlock() {
+        document.getElementById('gate').style.display = 'none';
+        document.getElementById('admin-area').style.display = '';
+        loadProcedures();
+        loadList();
+      }
+
+      document.getElementById('gate-btn').addEventListener('click', function () {
+        var val = document.getElementById('key-input').value.trim();
+        if (!val) return;
+        sessionStorage.setItem(KEY_STORAGE, val);
+        unlock();
+      });
+
+      document.getElementById('f-photo').addEventListener('change', function (e) {
+        var file = e.target.files[0];
+        photoDataUrl = null;
+        updateSubmitState();
+        if (!file) return;
+        var reader = new FileReader();
+        reader.onload = function () {
+          photoDataUrl = reader.result;
+          var img = document.getElementById('f-preview');
+          img.src = photoDataUrl;
+          img.style.display = 'block';
+          updateSubmitState();
+        };
+        reader.readAsDataURL(file);
+      });
+
+      function updateSubmitState() {
+        document.getElementById('submit-btn').disabled = !photoDataUrl;
+      }
+
+      document.getElementById('submit-btn').addEventListener('click', async function () {
+        var msg = document.getElementById('form-msg');
+        msg.textContent = ''; msg.className = 'msg';
+        if (!photoDataUrl) return;
+        this.disabled = true;
+        try {
+          var res = await fetch('/api/testimonials', {
+            method: 'POST',
+            headers: headers(true),
+            body: JSON.stringify({
+              patient_name: document.getElementById('f-name').value.trim(),
+              procedure: document.getElementById('f-proc').value,
+              comment: document.getElementById('f-comment').value.trim(),
+              photo_base64: photoDataUrl
+            })
+          });
+          var data = await res.json();
+          if (!res.ok) {
+            msg.textContent = data.error || 'Algo salió mal.';
+            msg.className = 'msg err';
+            if (res.status === 401) { sessionStorage.removeItem(KEY_STORAGE); location.reload(); }
+            return;
+          }
+          msg.textContent = 'Testimonio publicado.';
+          msg.className = 'msg ok';
+          document.getElementById('f-name').value = '';
+          document.getElementById('f-proc').value = '';
+          document.getElementById('f-comment').value = '';
+          document.getElementById('f-photo').value = '';
+          document.getElementById('f-preview').style.display = 'none';
+          photoDataUrl = null;
+          loadList();
+        } catch (e) {
+          msg.textContent = 'No se pudo conectar con el servidor.';
+          msg.className = 'msg err';
+        } finally {
+          updateSubmitState();
+        }
+      });
+
+      if (adminKey()) unlock();
+    })();
+  </script>
+</body>
+</html>

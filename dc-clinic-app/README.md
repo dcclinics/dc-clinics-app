@@ -1,6 +1,6 @@
-# DC Clinic App
+# DcClinics by Dr Camilo Henao
 
-App para pacientes de DC Clinic: agendamiento de citas y biblioteca de videos
+App para pacientes de DcClinics by Dr Camilo Henao: agendamiento de citas y biblioteca de videos
 educativos sobre cuidados pre y post-operatorios. Incluye dos partes:
 
 - **`server/` + `public/`** — la app real y funcional, hoy mismo: un backend
@@ -26,7 +26,7 @@ los videos (de ejemplo). Requiere **Node 22.5 o más nuevo** (usa el módulo
 Copia `server/.env.example` a `server/.env` y llena lo que ya tienes:
 
 **Stripe** (para cobrar la valoración inicial al agendar):
-1. En tu cuenta de Stripe, crea un producto "Valoración inicial DC Clinic" con
+1. En tu cuenta de Stripe, crea un producto "Valoración inicial DcClinics" con
    su precio.
 2. Copia el *Price ID* a `STRIPE_PRICE_ID` y tu clave secreta a
    `STRIPE_SECRET_KEY`.
@@ -58,6 +58,23 @@ fuera de esta primera versión para no bloquear el lanzamiento.
 `video_url` vacío. Reemplázalos por tus videos reales (edítalos directo en
 `server/db.js` antes de sembrar la base de datos, o pídeme que te arme un
 panel simple para subirlos sin tocar código).
+
+**Fotos de resultados y testimonios:** hay una nueva sección "Resultados" en
+la app donde tus pacientes ven fotos de resultados con el comentario del
+paciente. Tú las subes desde un panel aparte, pensado solo para ti:
+
+1. Corre la app (`npm start`) y abre `http://localhost:3000/admin.html` (esta
+   página **no** aparece en el menú de la app — es solo para ti, así que no
+   compartas ese link con pacientes).
+2. La primera vez te pide una clave: usa la que pongas en `ADMIN_KEY` en tu
+   `.env` (si la dejas vacía, funciona con la clave de demo `demo123` — pero
+   cámbiala antes de que la app esté pública, cualquiera que la adivine podría
+   subir o borrar fotos).
+3. Sube la foto, el nombre de cómo quieras mostrar al paciente (puede ser
+   "Paciente de DcClinics" si prefieres no usar su nombre real), el
+   procedimiento y su comentario — **solo con el consentimiento del
+   paciente para publicar su foto**. Las fotos quedan guardadas en
+   `public/uploads/testimonials/`.
 
 ## 3. Ponerla disponible para tus pacientes ya (sin App Store)
 
@@ -103,7 +120,9 @@ casi la misma experiencia hoy mismo, sin esperar la aprobación de Apple.
 ## Estructura del proyecto
 
 ```
-server/     Backend (Node puro): API de citas, videos, Stripe, WhatsApp
-public/     Frontend web instalable (PWA) que consume esa API
-mobile/     Punto de partida de la app nativa (Expo/React Native)
+server/                        Backend (Node puro): API de citas, videos, testimonios, Stripe, WhatsApp
+public/                        Frontend web instalable (PWA) que consume esa API
+public/admin.html              Panel privado para subir/borrar fotos de resultados y testimonios
+public/uploads/testimonials/   Fotos de resultados que subes desde admin.html
+mobile/                        Punto de partida de la app nativa (Expo/React Native)
 ```

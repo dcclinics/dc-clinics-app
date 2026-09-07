@@ -1,7 +1,7 @@
 {
-  "name": "DC Clinics",
-  "short_name": "DC Clinics",
-  "description": "Agenda tu cita y consulta videos de cuidados pre y post-operatorios de DC Clinic.",
+  "name": "DcClinics by Dr Camilo Henao",
+  "short_name": "DcClinics",
+  "description": "Agenda tu cita y consulta videos de cuidados pre y post-operatorios de DcClinics by Dr Camilo Henao.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#EDEAE3",

@@ -38,6 +38,20 @@ db.exec(`
     stripe_session_id TEXT,
     created_at TEXT NOT NULL DEFAULT (datetime('now'))
   );
+
+  -- Testimonios: fotos de resultados + comentario del paciente, para mostrar
+  -- en la sección "Resultados" de la app. Se cargan desde /admin.html (el
+  -- doctor las sube después de tener el permiso del paciente), no las suben
+  -- los pacientes directamente.
+  CREATE TABLE IF NOT EXISTS testimonials (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    patient_name TEXT NOT NULL DEFAULT 'Paciente de DcClinics',
+    procedure TEXT NOT NULL DEFAULT '',
+    comment TEXT NOT NULL DEFAULT '',
+    photo_path TEXT NOT NULL,
+    published INTEGER NOT NULL DEFAULT 1,
+    created_at TEXT NOT NULL DEFAULT (datetime('now'))
+  );
 `);
 
 // Horario base: se generan cupos cada 90 min entre estas horas, todos los días.

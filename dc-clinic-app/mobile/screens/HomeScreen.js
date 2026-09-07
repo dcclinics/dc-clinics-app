@@ -14,7 +14,8 @@ export default function HomeScreen({ navigation }) {
   return (
     <SafeAreaView style={styles.safe}>
       <ScrollView contentContainerStyle={styles.container}>
-        <Text style={styles.wordmark}>DC Clinic</Text>
+        <Text style={styles.wordmark}>DcClinics</Text>
+        <Text style={{ fontSize: 10, color: COLORS.soft, marginTop: -6, marginBottom: 6 }}>by Dr Camilo Henao</Text>
         <Text style={styles.greetName}>Hola 👋</Text>
 
         <View style={styles.apptCard}>

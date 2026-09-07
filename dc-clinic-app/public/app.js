@@ -9,6 +9,7 @@
     document.querySelectorAll('.screen').forEach(function (s) { s.classList.toggle('active', s.dataset.screen === tab); });
     document.querySelectorAll('.tab').forEach(function (b) { b.classList.toggle('active', b.dataset.tab === tab); });
     if (tab === 'videos') renderVideos();
+    if (tab === 'resultados') renderResultados();
   };
 
   window.agendaBack = function (step) {
@@ -159,6 +160,35 @@
 
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('/sw.js').catch(function () {});
+    }
+  }
+
+  function escapeHtml(str) {
+    return String(str || '').replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+
+  async function renderResultados() {
+    var wrap = document.getElementById('results-list');
+    try {
+      var res = await fetch('/api/testimonials');
+      var list = await res.json();
+      if (!list.length) {
+        wrap.innerHTML = '<p class="result-empty">Todavía no hay testimonios publicados.</p>';
+        return;
+      }
+      wrap.innerHTML = list.map(function (t) {
+        return '<div class="result-card">' +
+          '<img class="result-photo" src="' + t.photo_path + '" alt="Resultado de ' + escapeHtml(t.patient_name) + '" loading="lazy">' +
+          '<div class="result-body">' +
+          (t.procedure ? '<span class="result-tag">' + escapeHtml(t.procedure) + '</span>' : '') +
+          '<p class="result-name">' + escapeHtml(t.patient_name) + '</p>' +
+          (t.comment ? '<p class="result-comment">“' + escapeHtml(t.comment) + '”</p>' : '') +
+          '</div></div>';
+      }).join('');
+    } catch (e) {
+      wrap.innerHTML = '<p class="result-empty">No se pudieron cargar los resultados.</p>';
     }
   }
 
